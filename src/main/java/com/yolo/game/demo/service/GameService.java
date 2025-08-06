@@ -12,7 +12,6 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.random.RandomGenerator;
 
 import static com.yolo.game.demo.model.RoundState.*;
 @Slf4j
@@ -38,11 +37,6 @@ public class GameService {
         roundState = WAITING_FOR_BETS;
         log.info("New round started: accepting bets for 10 seconds");
     }
-
-//    public void finishRound() {
-//
-//        finishRound(winningNumber);
-//    }
 
     public void finishRound(int winningNumber) {
         roundState = CALCULATING_RESULTS;
