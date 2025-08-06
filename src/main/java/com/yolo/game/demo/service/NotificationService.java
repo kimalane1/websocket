@@ -30,7 +30,7 @@ public class NotificationService {
         sendToSession(session, payload);
     }
 
-    private void sendToSession(WebSocketSession session, Object payload) {
+     private void sendToSession(WebSocketSession session, Object payload) {
         if (session == null || !session.isOpen()) return;
         try {
             String json = new ObjectMapper().writeValueAsString(payload);

@@ -3,31 +3,28 @@ package com.yolo.game.demo.service;
 import com.yolo.game.demo.model.BetRequest;
 import com.yolo.game.demo.model.BetResponse;
 import com.yolo.game.demo.model.RoundState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.random.RandomGenerator;
 
 import static com.yolo.game.demo.model.RoundState.*;
-
+@Slf4j
 @Service
 public class GameService {
     public static final BigDecimal RATE = new BigDecimal("9.9");
-    private static final Logger log = LoggerFactory.getLogger(GameService.class);
+    @Getter
     private final Map<String, BetRequest> currentBets = new ConcurrentHashMap<>();
 
     private final NotificationService notificationService;
     private volatile RoundState roundState = FINISHED;
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
 
     Map<String, BigDecimal> winners = new HashMap<>();
 
@@ -40,15 +37,17 @@ public class GameService {
 
         roundState = WAITING_FOR_BETS;
         log.info("New round started: accepting bets for 10 seconds");
-
-        scheduler.schedule(this::finishRound, 10, TimeUnit.SECONDS);
     }
 
-    private void finishRound() {
+//    public void finishRound() {
+//
+//        finishRound(winningNumber);
+//    }
+
+    public void finishRound(int winningNumber) {
         roundState = CALCULATING_RESULTS;
         log.info("Round ended: calculating results");
 
-        var winningNumber = RandomGenerator.getDefault().nextInt(1, 11);
 
         for (Map.Entry<String, BetRequest> entry : currentBets.entrySet()) {
             BetResponse response = evaluate(winningNumber, entry.getValue());
@@ -68,17 +67,17 @@ public class GameService {
 
         currentBets.clear();
         roundState = FINISHED;
-
-        scheduler.schedule(this::startNewRound, 5, TimeUnit.SECONDS);
     }
 
     public void receive(BetRequest request) {
         if (roundState != WAITING_FOR_BETS) {
+            notificationService.sendToPlayer(request.nick(), String.format("Bet rejected: currently not accepting bets from %s", request.nick()));
             log.info("Bet rejected from {}, currently not accepting bets", request.nick());
             return;
         }
         currentBets.put(request.nick(), request);
         log.info("Bet accepted from {}", request.nick());
+        notificationService.sendToPlayer(request.nick(), String.format("Bet accepted from %s", request.nick()));
     }
 
     public BetResponse evaluate(int winningNumber, BetRequest request) {
@@ -91,7 +90,4 @@ public class GameService {
         return new BetResponse(request.nick(), success, request.bet(), winningNumber, amount);
     }
 
-    public Map<String, BetRequest> getCurrentBets() {
-        return currentBets;
-    }
 }

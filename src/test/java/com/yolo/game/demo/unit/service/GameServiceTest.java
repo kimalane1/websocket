@@ -3,6 +3,8 @@ package com.yolo.game.demo.unit.service;
 import com.yolo.game.demo.model.BetRequest;
 import com.yolo.game.demo.model.BetResponse;
 import com.yolo.game.demo.service.GameService;
+import com.yolo.game.demo.service.NotificationService;
+import com.yolo.game.demo.session.PlayerSessionStore;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -10,7 +12,10 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GameServiceTest {
-    private final GameService gameService = new GameService(null);
+    private final PlayerSessionStore playerSessionStore = new PlayerSessionStore();
+    private final NotificationService notificationService = new NotificationService(playerSessionStore);
+    private final GameService gameService = new GameService(notificationService);
+
     @Test
     void shouldAcceptBetWhenWaitingForBets() {
         gameService.startNewRound();

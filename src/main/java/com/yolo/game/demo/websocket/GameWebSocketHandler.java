@@ -52,7 +52,6 @@ public class GameWebSocketHandler implements WebSocketHandler {
             playerSessionStore.add(bet.nick(), session);
             gameService.receive(bet);
 
-            session.sendMessage(new TextMessage("Bet accepted: " + bet.nick()));
         } catch (Exception e) {
             session.sendMessage(new TextMessage("Error: incorrect bet request due to " + e.getMessage()));
         }
