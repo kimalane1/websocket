@@ -2,6 +2,7 @@ package com.yolo.game.demo.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yolo.game.demo.model.BetRequest;
+import org.springframework.lang.NonNull;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -34,7 +35,7 @@ public class WebSocketTestClient {
             private boolean first = true;
 
             @Override
-            public void handleTextMessage(WebSocketSession session, TextMessage message) {
+            public void handleTextMessage(@NonNull WebSocketSession session, @NonNull TextMessage message) {
                 if (first) {
                     firstMessage.complete(message.getPayload());
                     first = false;

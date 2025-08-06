@@ -6,6 +6,7 @@ import com.yolo.game.demo.model.RoundState;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -24,24 +25,24 @@ public class GameService {
     private final NotificationService notificationService;
     private volatile RoundState roundState = FINISHED;
 
-
     Map<String, BigDecimal> winners = new HashMap<>();
+    private final int DELAY;
 
-    public GameService(NotificationService notificationService) {
+    public GameService(NotificationService notificationService, @Value("${game.delay:10}") int DELAY) {
         this.notificationService = notificationService;
+        this.DELAY = DELAY;
     }
 
     public void startNewRound() {
         if (roundState != FINISHED) return;
 
         roundState = WAITING_FOR_BETS;
-        log.info("New round started: accepting bets for 10 seconds");
+        log.info("New round started: accepting bets for {} seconds", DELAY);
     }
 
     public void finishRound(int winningNumber) {
         roundState = CALCULATING_RESULTS;
         log.info("Round ended: calculating results");
-
 
         for (Map.Entry<String, BetRequest> entry : currentBets.entrySet()) {
             BetResponse response = evaluate(winningNumber, entry.getValue());
@@ -65,13 +66,11 @@ public class GameService {
 
     public void receive(BetRequest request) {
         if (roundState != WAITING_FOR_BETS) {
-            notificationService.sendToPlayer(request.nick(), String.format("Bet rejected: currently not accepting bets from %s", request.nick()));
             log.info("Bet rejected from {}, currently not accepting bets", request.nick());
             return;
         }
         currentBets.put(request.nick(), request);
         log.info("Bet accepted from {}", request.nick());
-        notificationService.sendToPlayer(request.nick(), String.format("Bet accepted from %s", request.nick()));
     }
 
     public BetResponse evaluate(int winningNumber, BetRequest request) {

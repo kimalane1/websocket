@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class GameServiceRtpTest {
     private final PlayerSessionStore playerSessionStore = new PlayerSessionStore();
     private final NotificationService notificationService = new NotificationService(playerSessionStore);
-    private final GameService gameService = new GameService(notificationService);
+    private final GameService gameService = new GameService(notificationService, 10);
 
     @Test
     void shouldCalculateRtpForMillionRounds() throws Exception {
